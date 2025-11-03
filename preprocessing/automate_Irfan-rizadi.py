@@ -533,33 +533,41 @@ def load_preprocessed_data(input_dir: str) -> Dict[str, Any]:
 # ============================================================================
 
 if __name__ == "__main__":
-    """
-    Contoh penggunaan automated preprocessing pipeline
-    """
-    
-    # Konfigurasi paths
-    DATASET_PATH = r'Air Pollution Forecasting_raw/LSTM-Multivariate_pollution.csv'
-    OUTPUT_DIR = r'preprocessing\Air Pollution Forecasting_preprocessing'
-    
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description="Run preprocessing pipeline")
+    parser.add_argument('--dataset', default=r'Air Pollution Forecasting_raw/LSTM-Multivariate_pollution.csv',
+                        help='Path ke file CSV dataset')
+    parser.add_argument('--output_dir', default=None,
+                        help='Directory output (default: sama dengan folder dataset)')
+    args = parser.parse_args()
+
+    DATASET_PATH = args.dataset
+    if args.output_dir:
+        OUTPUT_DIR = args.output_dir
+    else:
+        OUTPUT_DIR = os.path.dirname(os.path.abspath(DATASET_PATH)) or '.'
+
     # Initialize preprocessor
     preprocessor = AirPollutionPreprocessor(
         time_steps=24,      # 24 hours window
         test_size=0.2,      # 20% untuk testing
         random_state=42     # Untuk reproducibility
     )
-    
+
     # Jalankan preprocessing pipeline
     data = preprocessor.preprocess(
         file_path=DATASET_PATH,
         output_dir=OUTPUT_DIR
     )
-    
-    # Akses hasil preprocessing
+
+    # Akses hasil preprocessing (opsional, hanya untuk logging)
     X_train = data['X_train']
     X_test = data['X_test']
     y_train = data['y_train']
     y_test = data['y_test']
-    
+
     print("\n" + "="*60)
     print("DATA SIAP DIGUNAKAN!")
     print("="*60)

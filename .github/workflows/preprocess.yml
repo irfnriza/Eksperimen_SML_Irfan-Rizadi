@@ -1,0 +1,50 @@
+name: Preprocess dataset
+
+on:
+  push:
+    paths:
+      - 'Air Pollution Forecasting_raw/**'
+      - 'preprocessing/**'
+      - '.github/workflows/**'
+  workflow_dispatch: {}
+
+jobs:
+  preprocess:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies if present
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run preprocessing (save outputs to same folder as dataset)
+        run: |
+          DATASET="Air Pollution Forecasting_raw/LSTM-Multivariate_pollution.csv"
+          OUTPUT_DIR="$(dirname "$DATASET")"
+          echo "Dataset: $DATASET"
+          echo "Output dir: $OUTPUT_DIR"
+          python preprocessing/automate_Irfan-rizadi.py --dataset "$DATASET" --output_dir "$OUTPUT_DIR"
+
+      - name: Upload preprocessed files as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: preprocessed-dataset
+          path: |
+            Air Pollution Forecasting_raw/X_train.npy
+            Air Pollution Forecasting_raw/X_test.npy
+            Air Pollution Forecasting_raw/y_train.npy
+            Air Pollution Forecasting_raw/y_test.npy
+            Air Pollution Forecasting_raw/scaler_features.pkl
+            Air Pollution Forecasting_raw/scaler_target.pkl
+            Air Pollution Forecasting_raw/label_encoder.pkl
+            Air Pollution Forecasting_raw/metadata.pkl
